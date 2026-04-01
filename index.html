@@ -3,7 +3,7 @@
 <head>
   <title>Texa Tiers</title>
 
-  <!-- Firebase (compat version, works in normal HTML) -->
+  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -33,6 +33,7 @@
       display: flex;
       gap: 10px;
       padding: 10px 30px;
+      position: relative;
     }
 
     .tab, .region {
@@ -40,11 +41,27 @@
       padding: 6px 12px;
       cursor: pointer;
       border-radius: 6px;
-      transition: 0.2s;
+      transition: 0.2s, transform 0.2s;
     }
 
     .tab:hover, .region:hover {
+      transform: scale(1.05);
       background: #374151;
+    }
+
+    .tab.active {
+      color: white;
+      font-weight: bold;
+    }
+
+    /* Sliding underline element */
+    .tabs .underline {
+      position: absolute;
+      bottom: 0;
+      height: 3px;
+      background: #2563eb;
+      border-radius: 2px;
+      transition: 0.3s all ease;
     }
 
     .players {
@@ -157,7 +174,7 @@
 </div>
 
 <script>
-  // Initialize Firebase
+  // Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBXnW2iX1BvbsrnX8t5XKYlPWVaJTplG4A",
     authDomain: "texa-tier-list.firebaseapp.com",
@@ -173,110 +190,126 @@
   const tiersOrder = ["HT1","LT1","HT2","LT2","HT3","LT3","HT4","LT4","HT5","LT5"];
 
   function getTierValue(tier) {
-    if (!tier || tier === "UT") return 0;
+    if(!tier || tier==="UT") return 0;
     const type = tier.substring(0,2);
     const num = parseInt(tier.substring(2));
     return (tierPoints[type] || 0) - num;
   }
 
-  window.switchMode = function(mode) {
+  // SWITCH MODE
+  window.switchMode = function(mode){
     currentMode = mode;
     loadPlayers();
-  };
 
-  window.setRegion = function(region) {
+    // highlight active tab
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    const activeTab = Array.from(document.querySelectorAll('.tab')).find(tab => tab.innerText.toLowerCase()===mode);
+    if(activeTab) activeTab.classList.add('active');
+
+    // sliding underline
+    const tabsContainer = document.querySelector('.tabs');
+    let ul = tabsContainer.querySelector('.underline');
+    if(!ul){
+      ul = document.createElement('div');
+      ul.className='underline';
+      tabsContainer.appendChild(ul);
+    }
+    ul.style.left = activeTab.offsetLeft+'px';
+    ul.style.width = activeTab.offsetWidth+'px';
+  }
+
+  window.setRegion = function(region){
     currentRegion = region;
     loadPlayers();
-  };
+  }
 
-  async function loadPlayers() {
+  async function loadPlayers(){
     const container = document.getElementById("players");
     container.innerHTML = "";
 
     const snapshot = await db.collection("players").get();
     let players = [];
 
-    snapshot.forEach(doc => {
+    snapshot.forEach(doc=>{
       const p = doc.data();
-      if (!p.tiers) return;
-      if (currentRegion !== "ALL" && p.region !== currentRegion) return;
+      if(!p.tiers) return;
+      if(currentRegion!=="ALL" && p.region!==currentRegion) return;
       players.push(p);
     });
 
-    // Sort by selected mode
-    players.sort((a,b) => getTierValue(b.tiers[currentMode]) - getTierValue(a.tiers[currentMode]));
+    players.sort((a,b)=>getTierValue(b.tiers[currentMode]) - getTierValue(a.tiers[currentMode]));
 
-    players.forEach((p,i) => {
+    players.forEach((p,i)=>{
       const div = document.createElement("div");
-      div.className = "card fade";
-
-      if (i === 0) div.classList.add("top1");
-      if (i === 1) div.classList.add("top2");
-      if (i === 2) div.classList.add("top3");
+      div.className="card fade";
+      if(i===0) div.classList.add("top1");
+      if(i===1) div.classList.add("top2");
+      if(i===2) div.classList.add("top3");
 
       div.innerHTML = `
-        ${i<3 ? '<div class="crown">👑</div>':""}
+        ${i<3?'<div class="crown">👑</div>':""}
         <h3>#${i+1} ${p.name}</h3>
-        <p>${p.tiers[currentMode] || "—"}</p>
+        <p>${p.tiers[currentMode]||"—"}</p>
       `;
 
-      div.onclick = () => openPopup(p);
+      div.onclick = ()=>openPopup(p);
       container.appendChild(div);
     });
   }
 
-  window.openPopup = function(p) {
+  window.openPopup = function(p){
     const popup = document.getElementById("popup");
     const overlay = document.getElementById("overlay");
-    overlay.style.display = "block";
-    popup.style.display = "block";
+    overlay.style.display="block";
+    popup.style.display="block";
     popup.classList.add("show");
 
-    document.getElementById("pName").innerText = p.name;
-    document.getElementById("pRegion").innerText = "Region: " + (p.region || "N/A");
+    document.getElementById("pName").innerText=p.name;
+    document.getElementById("pRegion").innerText="Region: "+(p.region||"N/A");
 
-    let html = "";
-    for (let key in p.tiers) {
-      html += `<p>${key.toUpperCase()}: ${p.tiers[key]}</p>`;
+    let html="";
+    for(let key in p.tiers){
+      html+=`<p>${key.toUpperCase()}: ${p.tiers[key]}</p>`;
     }
-    document.getElementById("pTiers").innerHTML = html;
-  };
+    document.getElementById("pTiers").innerHTML=html;
+  }
 
-  window.closePopup = function() {
-    document.getElementById("overlay").style.display = "none";
-    document.getElementById("popup").style.display = "none";
-  };
+  window.closePopup=function(){
+    document.getElementById("overlay").style.display="none";
+    document.getElementById("popup").style.display="none";
+  }
 
-  // Search system
-  window.onload = () => {
-    loadPlayers();
+  // Search
+  window.onload=function(){
+    // Initial tab and underline
+    switchMode('overall');
 
     document.getElementById("search").addEventListener("keypress", async function(e){
-      if(e.key === "Enter"){
-        const value = this.value;
-        const overlay = document.getElementById("overlay");
-        const popup = document.getElementById("popup");
+      if(e.key==="Enter"){
+        const value=this.value;
+        const overlay=document.getElementById("overlay");
+        const popup=document.getElementById("popup");
 
-        overlay.style.display = "block";
-        popup.style.display = "block";
+        overlay.style.display="block";
+        popup.style.display="block";
         popup.classList.add("show");
 
-        document.getElementById("pName").innerText = `Searching For "${value}"...`;
-        document.getElementById("pRegion").innerText = "";
-        document.getElementById("pTiers").innerHTML = "";
+        document.getElementById("pName").innerText=`Searching For "${value}"...`;
+        document.getElementById("pRegion").innerText="";
+        document.getElementById("pTiers").innerHTML="";
 
         const snap = await db.collection("players").where("name","==",value).get();
         if(snap.empty){
-          document.getElementById("pName").innerText = `Player "${value}" Not Found ❌`;
-          document.getElementById("pRegion").innerText = "";
+          document.getElementById("pName").innerText=`Player "${value}" Not Found ❌`;
+          document.getElementById("pRegion").innerText="";
           return;
         }
 
-        const p = snap.docs[0].data();
+        const p=snap.docs[0].data();
         openPopup(p);
       }
     });
-  };
+  }
 </script>
 
 </body>
