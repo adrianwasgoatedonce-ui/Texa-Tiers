@@ -3,8 +3,150 @@
 <head>
   <title>Texa Tiers</title>
 
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBXnW2iX1BvbsrnX8t5XKYlPWVaJTplG4A",
+      authDomain: "texa-tier-list.firebaseapp.com",
+      projectId: "texa-tier-list"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let currentMode = "overall";
+    let currentRegion = "ALL";
+
+    // 🔥 TIER RANK SYSTEM (HT/LT WITH LT5 LOWEST)
+    function getTierValue(tier) {
+      if (!tier) return 0;
+      if (tier === "UT") return 0;
+
+      const type = tier.substring(0, 2);
+      const num = parseInt(tier.substring(2));
+
+      const base = {
+        "HT": 100,
+        "LT": 70
+      };
+
+      return (base[type] || 0) - num;
+    }
+
+    window.switchMode = function(mode) {
+      currentMode = mode;
+      loadPlayers();
+    };
+
+    window.setRegion = function(region) {
+      currentRegion = region;
+      loadPlayers();
+    };
+
+    async function loadPlayers() {
+      const container = document.getElementById("players");
+      container.innerHTML = "";
+
+      const snapshot = await getDocs(collection(db, "players"));
+
+      let players = [];
+
+      snapshot.forEach(doc => {
+        const p = doc.data();
+
+        if (!p.tiers) return;
+        if (currentRegion !== "ALL" && p.region !== currentRegion) return;
+
+        players.push(p);
+      });
+
+      players.sort((a, b) => {
+        return getTierValue(b.tiers[currentMode]) - getTierValue(a.tiers[currentMode]);
+      });
+
+      players.forEach((p, i) => {
+        const div = document.createElement("div");
+        div.className = "card fade";
+
+        if (i === 0) div.classList.add("top1");
+        if (i === 1) div.classList.add("top2");
+        if (i === 2) div.classList.add("top3");
+
+        div.innerHTML = `
+          ${i < 3 ? `<div class="crown">👑</div>` : ""}
+          <h3>#${i + 1} ${p.name}</h3>
+          <p>${p.tiers[currentMode] || "—"}</p>
+        `;
+
+        div.onclick = () => openPopup(p);
+
+        container.appendChild(div);
+      });
+    }
+
+    window.openPopup = function(p) {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("overlay");
+
+      overlay.style.display = "block";
+      popup.style.display = "block";
+
+      popup.classList.add("show");
+
+      document.getElementById("pName").innerText = p.name;
+      document.getElementById("pRegion").innerText = "Region: " + (p.region || "N/A");
+
+      let html = "";
+
+      for (let key in p.tiers) {
+        if (p.tiers[key]) {
+          html += `<p>${key.toUpperCase()}: ${p.tiers[key]}</p>`;
+        }
+      }
+
+      document.getElementById("pTiers").innerHTML = html;
+    };
+
+    window.closePopup = function() {
+      document.getElementById("overlay").style.display = "none";
+      document.getElementById("popup").style.display = "none";
+    };
+
+    // 🔍 SEARCH SYSTEM
+    window.onload = () => {
+      loadPlayers();
+
+      document.getElementById("search").addEventListener("keypress", async function(e) {
+        if (e.key === "Enter") {
+          const value = this.value;
+
+          const popup = document.getElementById("popup");
+          const overlay = document.getElementById("overlay");
+
+          overlay.style.display = "block";
+          popup.style.display = "block";
+
+          document.getElementById("pName").innerText = "Searching...";
+          document.getElementById("pRegion").innerText = "";
+          document.getElementById("pTiers").innerHTML = "";
+
+          const q = query(collection(db, "players"), where("name", "==", value));
+          const snap = await getDocs(q);
+
+          if (snap.empty) {
+            document.getElementById("pName").innerText = value;
+            document.getElementById("pRegion").innerText = "Player Not Found ❌";
+            return;
+          }
+
+          const p = snap.docs[0].data();
+          openPopup(p);
+        }
+      });
+    };
+  </script>
 
   <style>
     body {
@@ -22,26 +164,28 @@
       align-items: center;
     }
 
-    h1 { margin: 0; }
-
     #search {
-      padding: 8px;
+      padding: 6px;
       border-radius: 6px;
-      border: none;
-      width: 180px;
+      width: 150px;
     }
 
-    .tabs {
+    .tabs, .regions {
       display: flex;
       gap: 10px;
       padding: 10px 30px;
     }
 
-    .tab {
+    .tab, .region {
       background: #1f2937;
-      padding: 8px 15px;
+      padding: 6px 12px;
       cursor: pointer;
       border-radius: 6px;
+      transition: 0.2s;
+    }
+
+    .tab:hover, .region:hover {
+      background: #374151;
     }
 
     .players {
@@ -56,12 +200,25 @@
       padding: 15px;
       border-radius: 10px;
       cursor: pointer;
-      transition: 0.2s;
+      transition: 0.3s;
+      opacity: 0;
+      transform: translateY(10px);
       position: relative;
     }
 
     .card:hover {
       transform: scale(1.05);
+    }
+
+    .fade {
+      animation: fadeIn 0.5s forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .top1 { box-shadow: 0 0 20px gold; }
@@ -70,33 +227,38 @@
 
     .crown {
       position: absolute;
-      top: 5px;
       right: 8px;
+      top: 5px;
       font-size: 18px;
     }
-
-    .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #111827;
-      padding: 25px;
-      border-radius: 12px;
-      display: none;
-      width: 300px;
-    }
-
-    .popup h2 { margin-top: 0; }
 
     .overlay {
       position: fixed;
       width: 100%;
       height: 100%;
       background: rgba(0,0,0,0.6);
+      display: none;
       top: 0;
       left: 0;
+    }
+
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      background: #111827;
+      padding: 25px;
+      border-radius: 12px;
       display: none;
+      width: 300px;
+      opacity: 0;
+      transition: 0.3s;
+    }
+
+    .popup.show {
+      opacity: 1;
+      transform: translate(-50%, -50%);
     }
   </style>
 </head>
@@ -114,6 +276,14 @@
   <div class="tab" onclick="switchMode('mace')">Mace</div>
 </div>
 
+<div class="regions">
+  <div class="region" onclick="setRegion('ALL')">ALL</div>
+  <div class="region" onclick="setRegion('NA')">NA</div>
+  <div class="region" onclick="setRegion('EU')">EU</div>
+  <div class="region" onclick="setRegion('ASIA')">ASIA</div>
+  <div class="region" onclick="setRegion('OCE')">OCE</div>
+</div>
+
 <div class="players" id="players"></div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
@@ -123,111 +293,6 @@
   <p id="pRegion"></p>
   <div id="pTiers"></div>
 </div>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBXnW2iX1BvbsrnX8t5XKYlPWVaJTplG4A",
-  authDomain: "texa-tier-list.firebaseapp.com",
-  projectId: "texa-tier-list"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-let currentMode = "overall";
-
-function switchMode(mode) {
-  currentMode = mode;
-  loadPlayers();
-}
-
-async function loadPlayers() {
-  const container = document.getElementById("players");
-  container.innerHTML = "";
-
-  const snapshot = await db.collection("players").get();
-
-  let players = [];
-
-  snapshot.forEach(doc => {
-    const data = doc.data();
-
-    if (data.tiers && data.tiers[currentMode]) {
-      players.push(data);
-    }
-  });
-
-  players.sort((a, b) => (b.tiers.overall || "").localeCompare(a.tiers.overall || ""));
-
-  players.forEach((p, i) => {
-    const div = document.createElement("div");
-    div.className = "card";
-
-    if (i === 0) div.classList.add("top1");
-    if (i === 1) div.classList.add("top2");
-    if (i === 2) div.classList.add("top3");
-
-    div.innerHTML = `
-      ${i < 3 ? `<div class="crown">👑</div>` : ""}
-      <h3>${p.name}</h3>
-      <p>${p.tiers[currentMode]}</p>
-    `;
-
-    div.onclick = () => openPopup(p);
-
-    container.appendChild(div);
-  });
-}
-
-function openPopup(p) {
-  document.getElementById("overlay").style.display = "block";
-  document.getElementById("popup").style.display = "block";
-
-  document.getElementById("pName").innerText = p.name;
-  document.getElementById("pRegion").innerText = "Region: " + (p.region || "N/A");
-
-  let html = "";
-
-  for (let key in p.tiers) {
-    if (p.tiers[key]) {
-      html += `<p>${key.toUpperCase()}: ${p.tiers[key]}</p>`;
-    }
-  }
-
-  document.getElementById("pTiers").innerHTML = html;
-}
-
-function closePopup() {
-  document.getElementById("overlay").style.display = "none";
-  document.getElementById("popup").style.display = "none";
-}
-
-document.getElementById("search").addEventListener("keypress", async function(e) {
-  if (e.key === "Enter") {
-    const value = this.value;
-
-    document.getElementById("popup").style.display = "block";
-    document.getElementById("overlay").style.display = "block";
-
-    document.getElementById("pName").innerText = "Searching...";
-    document.getElementById("pRegion").innerText = "";
-    document.getElementById("pTiers").innerHTML = "";
-
-    const snap = await db.collection("players").where("name","==",value).get();
-
-    if (snap.empty) {
-      document.getElementById("pName").innerText = value;
-      document.getElementById("pRegion").innerText = "Player Not Found ❌";
-      return;
-    }
-
-    const p = snap.docs[0].data();
-    openPopup(p);
-  }
-});
-
-loadPlayers();
-</script>
 
 </body>
 </html>
