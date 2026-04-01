@@ -18,293 +18,206 @@
       margin-top: 25px;
     }
 
-    .tabs {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 15px;
-      position: relative;
-    }
-
-    .tab {
-      background: #1f2937;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .tab:hover {
-      background: #374151;
-      transform: scale(1.05);
-    }
-
-    .tab.active {
-      font-weight: bold;
-    }
-
-    .tabs .underline {
-      position: absolute;
-      bottom: -6px;
-      height: 3px;
-      background: #2563eb;
-      border-radius: 2px;
-      transition: 0.3s;
-    }
-
-    /* SEARCH BAR */
+    /* SEARCH */
     .search-container {
       position: fixed;
       top: 20px;
       right: 20px;
       display: flex;
       gap: 6px;
-      z-index: 10;
     }
 
     .search-container input {
       background: #1f2937;
       border: none;
-      padding: 10px 14px;
+      padding: 10px;
       border-radius: 8px;
       color: white;
-      outline: none;
-      width: 180px;
     }
 
     .search-container button {
       background: #2563eb;
       border: none;
-      padding: 10px 14px;
+      padding: 10px;
       border-radius: 8px;
       color: white;
       cursor: pointer;
-      font-weight: bold;
     }
 
-    /* CENTER POPUPS */
-    .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #1f2937;
-      padding: 20px 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
-      text-align: center;
-      z-index: 100;
-      min-width: 260px;
-    }
-
-    .popup.error {
-      background: #7f1d1d;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    /* REGIONS (FORCED LEFT) */
-    .regions-container {
-      position: fixed;
-      left: 20px !important;
-      right: auto !important;
-      top: 120px;
-    }
-
-    .regions {
+    /* PLAYERS */
+    .players {
+      margin-top: 80px;
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 10px;
-      position: relative;
     }
 
-    .region {
+    .player {
       background: #1f2937;
-      padding: 8px 14px;
-      border-radius: 6px;
+      padding: 10px 20px;
+      border-radius: 10px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       transition: 0.2s;
-      text-align: center;
     }
 
-    .region:hover {
+    .player:hover {
       background: #374151;
       transform: scale(1.05);
     }
 
-    .region.active {
-      font-weight: bold;
+    .player img {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
     }
 
-    .regions .underline {
-      position: absolute;
-      left: -6px;
-      width: 3px;
-      background: #2563eb;
-      border-radius: 2px;
-      transition: 0.3s;
+    /* MODAL */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    .content {
-      margin-top: 60px;
+    .modal {
+      background: #111827;
+      padding: 20px;
+      border-radius: 12px;
+      width: 300px;
       text-align: center;
-      opacity: 0.5;
     }
+
+    .hidden { display: none; }
+
+    /* SPINNER */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top: 4px solid #60a5fa;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* RANKS */
+    .rank { padding: 6px 12px; border-radius: 999px; margin-top: 10px; display: inline-block; }
+    .rookie { background:#374151; }
+    .immortal { background: linear-gradient(45deg,#facc15,#f97316); color:black; }
+
+    /* TIERS */
+    .tiers {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .tier {
+      background: #1f2937;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
   </style>
 </head>
 
 <body>
 
-  <div class="title">Texa Teirs</div>
+<div class="title">Texa Teirs</div>
 
-  <!-- SEARCH -->
-  <div class="search-container">
-    <input type="text" id="playerInput" placeholder="Search player..." />
-    <button onclick="searchPlayer()">Search</button>
-  </div>
+<div class="search-container">
+  <input type="text" id="playerInput" placeholder="Search player..." />
+  <button onclick="searchPlayer()">Search</button>
+</div>
 
-  <!-- CENTER POPUPS -->
-  <div id="searchingPopup" class="popup hidden">
-    <strong>Searching Player...</strong><br><br>
-    <span id="searchingName"></span>
-  </div>
+<div class="players" id="players"></div>
 
-  <div id="errorPopup" class="popup error hidden">
-    <strong>Player Not Found</strong><br><br>
-    <span id="errorName"></span>
+<!-- MODAL -->
+<div id="modal" class="modal-backdrop hidden" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div id="modalContent"></div>
   </div>
-
-  <!-- GAMEMODES -->
-  <div class="tabs" id="tabs">
-    <div class="tab" onclick="switchMode('overall')">Overall</div>
-    <div class="tab" onclick="switchMode('vanilla')">Vanilla</div>
-    <div class="tab" onclick="switchMode('mace')">Mace</div>
-    <div class="tab" onclick="switchMode('sword')">Sword</div>
-    <div class="tab" onclick="switchMode('uhc')">UHC</div>
-    <div class="tab" onclick="switchMode('smp')">SMP</div>
-    <div class="tab" onclick="switchMode('axe')">Axe</div>
-    <div class="tab" onclick="switchMode('pot')">Pot</div>
-    <div class="tab" onclick="switchMode('nethpot')">NethOP</div>
-  </div>
-
-  <!-- REGIONS -->
-  <div class="regions-container">
-    <div class="regions" id="regions">
-      <div class="region" onclick="setRegion('ALL')">ALL</div>
-      <div class="region" onclick="setRegion('NA')">NA</div>
-      <div class="region" onclick="setRegion('EU')">EU</div>
-      <div class="region" onclick="setRegion('ASIA')">ASIA</div>
-      <div class="region" onclick="setRegion('OCE')">OCE</div>
-    </div>
-  </div>
-
-  <div class="content">
-    <p>Tier system goes here...</p>
-  </div>
+</div>
 
 <script>
-  let currentMode = "overall";
-  let currentRegion = "ALL";
+const players = [
+  {name:"Demonmcc", rank:"Immortal Demon", class:"immortal", position:1096, tiers:["HT2","LT3","HT5"]},
+  {name:"NoobPvP", rank:"Rookie", class:"rookie", position:9999, tiers:["LT1"]}
+];
 
-  function switchMode(mode){
-    currentMode = mode;
+function getHead(username){
+  return `https://mc-heads.net/avatar/${username}`;
+}
 
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    const active = [...document.querySelectorAll('.tab')]
-      .find(t => t.innerText.toLowerCase() === mode);
+function renderPlayers(){
+  const container = document.getElementById("players");
+  container.innerHTML = "";
 
-    if(active){
-      active.classList.add('active');
-
-      const tabs = document.getElementById("tabs");
-      let ul = tabs.querySelector(".underline");
-
-      if(!ul){
-        ul = document.createElement("div");
-        ul.className = "underline";
-        tabs.appendChild(ul);
-      }
-
-      ul.style.width = active.offsetWidth + "px";
-      ul.style.left = active.offsetLeft + "px";
-    }
-  }
-
-  function setRegion(region){
-    currentRegion = region;
-
-    document.querySelectorAll('.region').forEach(r => r.classList.remove('active'));
-    const active = [...document.querySelectorAll('.region')]
-      .find(r => r.innerText === region);
-
-    if(active){
-      active.classList.add('active');
-
-      const regions = document.getElementById("regions");
-      let ul = regions.querySelector(".underline");
-
-      if(!ul){
-        ul = document.createElement("div");
-        ul.className = "underline";
-        regions.appendChild(ul);
-      }
-
-      ul.style.height = active.offsetHeight + "px";
-      ul.style.top = active.offsetTop + "px";
-    }
-  }
-
-  async function searchPlayer() {
-    const username = document.getElementById("playerInput").value;
-    if (!username) return;
-
-    showSearching(username);
-
-    try {
-      const res = await fetch(`https://api.mojang.com/users/profiles/minecraft/${username}`);
-      if (!res.ok) throw new Error();
-
-      hideSearching();
-      window.open(`https://namemc.com/profile/${username}`, "_blank");
-
-    } catch {
-      hideSearching();
-      showError(username);
-    }
-  }
-
-  function showSearching(name){
-    document.getElementById("searchingPopup").classList.remove("hidden");
-    document.getElementById("searchingName").innerText = "Searching for " + name;
-  }
-
-  function hideSearching(){
-    document.getElementById("searchingPopup").classList.add("hidden");
-  }
-
-  function showError(name){
-    const popup = document.getElementById("errorPopup");
-    document.getElementById("errorName").innerText = name;
-    popup.classList.remove("hidden");
-
-    setTimeout(() => {
-      popup.classList.add("hidden");
-    }, 2500);
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("playerInput")
-      .addEventListener("keypress", function(e) {
-        if (e.key === "Enter") {
-          searchPlayer();
-        }
-      });
-
-    switchMode('overall');
-    setRegion('ALL');
+  players.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "player";
+    div.innerHTML = `
+      <img src="${getHead(p.name)}">
+      ${p.name}
+    `;
+    div.onclick = () => openProfile(p);
+    container.appendChild(div);
   });
+}
+
+function openProfile(player){
+  document.getElementById("modal").classList.remove("hidden");
+
+  const content = document.getElementById("modalContent");
+  content.innerHTML = `<div class="spinner"></div>`;
+
+  setTimeout(()=>{
+    content.innerHTML = `
+      <img src="${getHead(player.name)}" style="width:64px;border-radius:8px;">
+      <h2>${player.name}</h2>
+      <div class="rank ${player.class}">${player.rank}</div>
+      <p>🏆 Position: ${player.position}</p>
+
+      <div class="tiers">
+        ${player.tiers.map(t => `<div class="tier">${t}</div>`).join("")}
+      </div>
+    `;
+  }, 500);
+}
+
+function closeModal(){
+  document.getElementById("modal").classList.add("hidden");
+}
+
+/* SEARCH → OPEN MODAL */
+function searchPlayer(){
+  const name = document.getElementById("playerInput").value;
+  if(!name) return;
+
+  openProfile({
+    name: name,
+    rank: "Rookie",
+    class: "rookie",
+    position: "Unranked",
+    tiers: ["N/A"]
+  });
+}
+
+document.addEventListener("DOMContentLoaded", renderPlayers);
 </script>
 
 </body>
