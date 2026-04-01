@@ -1,263 +1,232 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Texa Tier List</title>
+  <title>Texa Tiers</title>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
   <style>
     body {
-      background: #020617;
+      background: #0b0f1a;
       color: white;
       font-family: Arial;
-      padding: 20px;
+      margin: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 30px;
+      background: #111827;
+      align-items: center;
+    }
+
+    h1 { margin: 0; }
+
+    #search {
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      width: 180px;
     }
 
     .tabs {
       display: flex;
-      gap: 6px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .tabs button {
-      background: #1f2937;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-    }
-
-    .tabs button.active {
-      background: #3b82f6;
-    }
-
-    #search {
-      width: 100%;
-      padding: 8px;
-      border-radius: 8px;
-      border: none;
-      background: #111827;
-      color: white;
-      margin-bottom: 10px;
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 5px;
-      transition: 0.2s;
-      cursor: pointer;
-    }
-
-    .row:hover {
-      transform: scale(1.02);
-      background: #1f2937;
-    }
-
-    .row-left {
-      display: flex;
       gap: 10px;
-      align-items: center;
+      padding: 10px 30px;
     }
 
-    .head {
-      width: 25px;
-      border-radius: 5px;
+    .tab {
+      background: #1f2937;
+      padding: 8px 15px;
+      cursor: pointer;
+      border-radius: 6px;
     }
 
-    .ht { background: rgba(34,197,94,0.15); }
+    .players {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
 
-    .top1 { box-shadow: 0 0 15px gold; }
-    .top2 { box-shadow: 0 0 12px silver; }
-    .top3 { box-shadow: 0 0 12px #cd7f32; }
+    .card {
+      background: #1f2937;
+      padding: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .top1 { box-shadow: 0 0 20px gold; }
+    .top2 { box-shadow: 0 0 20px silver; }
+    .top3 { box-shadow: 0 0 20px #cd7f32; }
+
+    .crown {
+      position: absolute;
+      top: 5px;
+      right: 8px;
+      font-size: 18px;
+    }
 
     .popup {
-      display: none;
       position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .popup-card {
-      background: #0f172a;
-      padding: 20px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #111827;
+      padding: 25px;
       border-radius: 12px;
+      display: none;
       width: 300px;
     }
 
-    .tier-box {
-      background: #1f2937;
-      padding: 5px;
-      margin: 3px;
-      border-radius: 6px;
-      font-size: 12px;
+    .popup h2 { margin-top: 0; }
+
+    .overlay {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      top: 0;
+      left: 0;
+      display: none;
     }
   </style>
 </head>
 
 <body>
 
-<h1 style="text-align:center;">Texa Tier List</h1>
-
-<input id="search" placeholder="Search player..." oninput="render(currentMode)">
+<header>
+  <h1>Texa Tiers</h1>
+  <input id="search" placeholder="Search player...">
+</header>
 
 <div class="tabs">
-  <button onclick="switchMode('Overall', this)" class="active">Overall</button>
+  <div class="tab" onclick="switchMode('overall')">Overall</div>
+  <div class="tab" onclick="switchMode('sword')">Sword</div>
+  <div class="tab" onclick="switchMode('mace')">Mace</div>
 </div>
 
-<div id="list"></div>
+<div class="players" id="players"></div>
 
-<!-- popup -->
-<div id="popup" class="popup" onclick="closePopup()">
-  <div class="popup-card" onclick="event.stopPropagation()">
-    <h2 id="pname"></h2>
-    <img id="phead">
-    <div id="ppoints"></div>
-    <div id="prank"></div>
-    <div id="ptiers"></div>
-  </div>
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+
+<div class="popup" id="popup">
+  <h2 id="pName"></h2>
+  <p id="pRegion"></p>
+  <div id="pTiers"></div>
 </div>
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+<script>
 const firebaseConfig = {
   apiKey: "AIzaSyBXnW2iX1BvbsrnX8t5XKYlPWVaJTplG4A",
   authDomain: "texa-tier-list.firebaseapp.com",
-  projectId: "texa-tier-list",
-  storageBucket: "texa-tier-list.firebasestorage.app",
-  messagingSenderId: "590001856539",
-  appId: "1:590001856539:web:9609167325b163a60398be"
+  projectId: "texa-tier-list"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-let players = [];
-let currentMode = "Overall";
+let currentMode = "overall";
 
-const tierPoints = {
-  HT1: 100, LT1: 90,
-  HT2: 80, LT2: 70,
-  HT3: 60, LT3: 50,
-  HT4: 40, LT4: 30
-};
-
-function getRank(points) {
-  if (points >= 300) return { name: "Immortal", color: "red" };
-  if (points >= 250) return { name: "Elite Champion", color: "purple" };
-  if (points >= 200) return { name: "Master", color: "blue" };
-  if (points >= 150) return { name: "Advanced", color: "green" };
-  if (points >= 100) return { name: "Skilled", color: "gold" };
-  return { name: "Beginner", color: "gray" };
-}
-
-async function loadData() {
-  players = [];
-
-  const snapshot = await getDocs(collection(db, "players"));
-
-  snapshot.forEach(doc => {
-    let p = doc.data();
-    let points = 0;
-
-    for (let m in p.tiers) {
-      points += tierPoints[p.tiers[m]] || 0;
-    }
-
-    players.push({
-      name: p.name,
-      tiers: p.tiers,
-      points
-    });
-  });
-
-  render(currentMode);
-}
-
-function switchMode(mode, el) {
+function switchMode(mode) {
   currentMode = mode;
-
-  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
-  if (el) el.classList.add("active");
-
-  render(mode);
+  loadPlayers();
 }
 
-function render(mode) {
-  const container = document.getElementById("list");
+async function loadPlayers() {
+  const container = document.getElementById("players");
   container.innerHTML = "";
 
-  const search = document.getElementById("search").value.toLowerCase();
+  const snapshot = await db.collection("players").get();
 
-  players.sort((a,b)=>b.points-a.points);
+  let players = [];
 
-  players.forEach((p,i)=>{
-    if (!p.name.toLowerCase().includes(search)) return;
+  snapshot.forEach(doc => {
+    const data = doc.data();
 
-    let crown = i===0?"👑":i===1?"🥈":i===2?"🥉":"";
-    let extra = i===0?"top1":i===1?"top2":i===2?"top3":"";
+    if (data.tiers && data.tiers[currentMode]) {
+      players.push(data);
+    }
+  });
 
-    const rank = getRank(p.points);
+  players.sort((a, b) => (b.tiers.overall || "").localeCompare(a.tiers.overall || ""));
 
-    let row = document.createElement("div");
-    row.className = "row ht " + extra;
+  players.forEach((p, i) => {
+    const div = document.createElement("div");
+    div.className = "card";
 
-    row.onclick = ()=>openPopup(p.name);
+    if (i === 0) div.classList.add("top1");
+    if (i === 1) div.classList.add("top2");
+    if (i === 2) div.classList.add("top3");
 
-    row.innerHTML = `
-      <div class="row-left">
-        <b>${crown} #${i+1}</b>
-        <img class="head" src="https://mc-heads.net/avatar/${p.name}">
-        ${p.name}
-      </div>
-      <div>
-        <span style="background:${rank.color};padding:3px 6px;border-radius:5px;font-size:11px;">
-          ${rank.name}
-        </span><br>
-        ${p.points} pts
-      </div>
+    div.innerHTML = `
+      ${i < 3 ? `<div class="crown">👑</div>` : ""}
+      <h3>${p.name}</h3>
+      <p>${p.tiers[currentMode]}</p>
     `;
 
-    container.appendChild(row);
+    div.onclick = () => openPopup(p);
+
+    container.appendChild(div);
   });
 }
 
-function openPopup(name){
-  const p = players.find(x=>x.name===name);
+function openPopup(p) {
+  document.getElementById("overlay").style.display = "block";
+  document.getElementById("popup").style.display = "block";
 
-  document.getElementById("popup").style.display="flex";
-  document.getElementById("pname").innerText=p.name;
-  document.getElementById("phead").src=`https://mc-heads.net/avatar/${p.name}`;
-  document.getElementById("ppoints").innerText=p.points+" pts";
+  document.getElementById("pName").innerText = p.name;
+  document.getElementById("pRegion").innerText = "Region: " + (p.region || "N/A");
 
-  const sorted=[...players].sort((a,b)=>b.points-a.points);
-  const pos=sorted.findIndex(x=>x.name===name)+1;
+  let html = "";
 
-  document.getElementById("prank").innerText="#"+pos;
-
-  const box=document.getElementById("ptiers");
-  box.innerHTML="";
-
-  for(let m in p.tiers){
-    let d=document.createElement("div");
-    d.className="tier-box";
-    d.innerText=m+": "+p.tiers[m];
-    box.appendChild(d);
+  for (let key in p.tiers) {
+    if (p.tiers[key]) {
+      html += `<p>${key.toUpperCase()}: ${p.tiers[key]}</p>`;
+    }
   }
+
+  document.getElementById("pTiers").innerHTML = html;
 }
 
-window.closePopup=()=>document.getElementById("popup").style.display="none";
+function closePopup() {
+  document.getElementById("overlay").style.display = "none";
+  document.getElementById("popup").style.display = "none";
+}
 
-loadData();
+document.getElementById("search").addEventListener("keypress", async function(e) {
+  if (e.key === "Enter") {
+    const value = this.value;
 
+    document.getElementById("popup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
+
+    document.getElementById("pName").innerText = "Searching...";
+    document.getElementById("pRegion").innerText = "";
+    document.getElementById("pTiers").innerHTML = "";
+
+    const snap = await db.collection("players").where("name","==",value).get();
+
+    if (snap.empty) {
+      document.getElementById("pName").innerText = value;
+      document.getElementById("pRegion").innerText = "Player Not Found ❌";
+      return;
+    }
+
+    const p = snap.docs[0].data();
+    openPopup(p);
+  }
+});
+
+loadPlayers();
 </script>
 
 </body>
