@@ -5,268 +5,265 @@
 
   <style>
     body {
-      margin: 0;
       font-family: Arial;
-      background: #0b1220;
-      color: white;
-    }
-
-    /* NAVBAR */
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 25px;
       background: #0f172a;
-      border-bottom: 1px solid #1f2937;
+      color: white;
+      text-align: center;
     }
 
-    .logo {
-      font-size: 22px;
-      font-weight: bold;
-      color: #facc15;
-    }
-
-    /* TABS */
     .tabs {
       display: flex;
       justify-content: center;
       gap: 10px;
-      padding: 15px;
-      flex-wrap: wrap;
+      margin: 20px;
     }
 
     .tab {
       padding: 10px 15px;
-      background: #111827;
-      border-radius: 10px;
+      background: #1f2937;
+      border-radius: 8px;
       cursor: pointer;
     }
 
-    .tab:hover {
-      background: #1f2937;
+    .tab.active {
+      background: #2563eb;
     }
 
-    .active {
-      background: #374151;
+    #list {
+      max-width: 500px;
+      margin: auto;
     }
 
-    /* TIERS */
-    #tiers {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      padding: 20px;
-      flex-wrap: wrap;
-    }
-
-    .tier {
-      width: 220px;
-      background: #0f172a;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .tier-title {
-      padding: 12px;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    .t1 { background: #facc15; color: black; }
-    .t2 { background: #9ca3af; }
-    .t3 { background: #92400e; }
-    .t4 { background: #1f2937; }
-    .t5 { background: #111827; }
-
-    /* PLAYER ROW */
     .row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 8px;
-      border-bottom: 1px solid #0b1220;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .ht {
+      background: #1d4ed8;
+    }
+
+    .lt {
+      background: #374151;
     }
 
     .row-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .head {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
+      width: 30px;
+      border-radius: 5px;
     }
 
-    .ht { background: #1f2937; }
-    .lt { background: #111827; }
-
-    .arrow {
-      opacity: 0.5;
-    }
-
-    /* OVERALL LIST */
-    .overall-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #1f2937;
-      margin: 8px auto;
-      padding: 10px;
-      width: 320px;
+    .admin {
+      background: #111827;
+      padding: 15px;
       border-radius: 10px;
+      margin: 20px;
+    }
+
+    input, select, button {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 
 <body>
 
-<!-- NAV -->
-<div class="nav">
-  <div class="logo">⚔️ Texa Tier List</div>
+<h1>⚔️ Texa Tier List</h1>
+
+<!-- ADMIN PANEL -->
+<div class="admin">
+  <h3>Admin Panel</h3>
+
+  <input id="nameInput" placeholder="Player Name">
+
+  <select id="modeInput">
+    <option>Overall</option>
+    <option>Vanilla</option>
+    <option>UHC</option>
+    <option>Sword</option>
+    <option>Axe</option>
+  </select>
+
+  <select id="tierInput">
+    <option>HT1</option><option>LT1</option>
+    <option>HT2</option><option>LT2</option>
+    <option>HT3</option><option>LT3</option>
+    <option>HT4</option><option>LT4</option>
+  </select>
+
+  <button onclick="addPlayer()">Add Player</button>
 </div>
 
 <!-- TABS -->
 <div class="tabs">
-  <div class="tab active" onclick="switchMode('Overall', this)">🏆 Overall</div>
+  <div class="tab active" onclick="switchMode('Overall', this)">Overall</div>
   <div class="tab" onclick="switchMode('Vanilla', this)">Vanilla</div>
   <div class="tab" onclick="switchMode('UHC', this)">UHC</div>
   <div class="tab" onclick="switchMode('Sword', this)">Sword</div>
   <div class="tab" onclick="switchMode('Axe', this)">Axe</div>
 </div>
 
-<!-- CONTENT -->
-<div id="tiers"></div>
+<div id="list"></div>
 
-<script>
-const data = {
-  Overall: {
-    "Top Players": {
-      HT: ["K1RBE", "Camcal", "Demonmcc", "KingD3fault"],
-      LT: ["qPower", "Tokenu", "cloudmlol"]
-    }
-  },
+<script type="module">
 
-  Vanilla: {
-    "Tier 1": { HT: ["K1RBE"], LT: [] },
-    "Tier 2": {
-      HT: ["Camcal","Demonmcc","KingD3fault","qPower","Tokenu","cloudmlol","Cowarted"],
-      LT: ["IRONSKKEGOXX7153","ItzEggman","GalleryWalk"]
-    },
-    "Tier 3": {
-      HT: ["jayckuuub","ItzTerrel"],
-      LT: ["thelastw1nter","isolation"]
-    },
-    "Tier 4": { HT: ["trayde_"], LT: ["8amnNoticeMe"] },
-    "Tier 5": { HT: ["barbarthecrafter"], LT: [] }
-  },
+// 🔥 FIREBASE IMPORTS
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  UHC: {
-    "Tier 1": { HT: ["Player1"], LT: [] },
-    "Tier 2": { HT: ["Player2"], LT: ["Player3"] },
-    "Tier 3": { HT: [], LT: [] },
-    "Tier 4": { HT: [], LT: [] },
-    "Tier 5": { HT: [], LT: [] }
-  },
-
-  Sword: {
-    "Tier 1": { HT: ["SwordGod"], LT: [] },
-    "Tier 2": { HT: [], LT: [] },
-    "Tier 3": { HT: [], LT: [] },
-    "Tier 4": { HT: [], LT: [] },
-    "Tier 5": { HT: [], LT: [] }
-  },
-
-  Axe: {
-    "Tier 1": { HT: ["AxePro"], LT: [] },
-    "Tier 2": { HT: [], LT: [] },
-    "Tier 3": { HT: [], LT: [] },
-    "Tier 4": { HT: [], LT: [] },
-    "Tier 5": { HT: [], LT: [] }
-  }
+// 🔥 YOUR CONFIG (PASTE YOURS HERE)
+const firebaseConfig = {
+  apiKey: "PASTE",
+  authDomain: "PASTE",
+  projectId: "PASTE",
+  storageBucket: "PASTE",
+  messagingSenderId: "PASTE",
+  appId: "PASTE"
 };
 
-function getHead(name) {
-  return `https://mc-heads.net/avatar/${name}`;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 🔥 DATABASE
+let database = {
+  Overall: {},
+  Vanilla: {},
+  UHC: {},
+  Sword: {},
+  Axe: {}
+};
+
+// 🔥 TIER ORDER
+const tierOrder = [
+  "HT1","LT1",
+  "HT2","LT2",
+  "HT3","LT3",
+  "HT4","LT4"
+];
+
+// 🔥 ADD PLAYER
+async function addPlayer() {
+  const name = document.getElementById("nameInput").value.trim();
+  const mode = document.getElementById("modeInput").value;
+  const tier = document.getElementById("tierInput").value;
+
+  if (!name) return;
+
+  await addDoc(collection(db, "tiers"), {
+    name,
+    mode,
+    tier
+  });
+
+  loadData();
 }
+
+// 🔥 LOAD DATA
+async function loadData() {
+  database = {
+    Overall: {},
+    Vanilla: {},
+    UHC: {},
+    Sword: {},
+    Axe: {}
+  };
+
+  const snapshot = await getDocs(collection(db, "tiers"));
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+
+    if (!database[data.mode][data.tier]) {
+      database[data.mode][data.tier] = [];
+    }
+
+    database[data.mode][data.tier].push(data.name);
+  });
+
+  render(currentMode);
+}
+
+// 🔥 RENDER
+let currentMode = "Overall";
 
 function render(mode) {
-  const container = document.getElementById("tiers");
+  const container = document.getElementById("list");
   container.innerHTML = "";
 
-  // 🏆 OVERALL
-  if (mode === "Overall") {
-    let list = [...data.Overall["Top Players"].HT, ...data.Overall["Top Players"].LT];
+  const tiers = database[mode] || {};
 
-    list.forEach((player, index) => {
-      let row = document.createElement("div");
-      row.className = "overall-row";
+  const sorted = Object.keys(tiers).sort(
+    (a, b) => tierOrder.indexOf(a) - tierOrder.indexOf(b)
+  );
 
-      row.innerHTML = `
-        <div style="display:flex;align-items:center;gap:10px;">
-          <b>#${index + 1}</b>
-          <img src="${getHead(player)}" width="30">
-          ${player}
-        </div>
-        <div>⭐</div>
-      `;
-
-      container.appendChild(row);
-    });
-
-    return;
-  }
-
-  // 🔥 TIERS
-  let i = 1;
-
-  for (let tier in data[mode]) {
-    let box = document.createElement("div");
-    box.className = "tier";
+  sorted.forEach(tier => {
+    const isHT = tier.startsWith("HT");
 
     let title = document.createElement("div");
-    title.className = "tier-title t" + i;
     title.innerText = tier;
-    box.appendChild(title);
+    title.style.marginTop = "10px";
+    title.style.fontWeight = "bold";
 
-    data[mode][tier].HT.forEach(p => {
-      box.appendChild(makeRow(p, "ht"));
+    container.appendChild(title);
+
+    tiers[tier].sort().forEach(player => {
+      container.appendChild(makeRow(player, isHT ? "ht" : "lt"));
     });
-
-    data[mode][tier].LT.forEach(p => {
-      box.appendChild(makeRow(p, "lt"));
-    });
-
-    container.appendChild(box);
-    i++;
-  }
+  });
 }
 
+// 🔥 PLAYER ROW
 function makeRow(player, type) {
   let row = document.createElement("div");
   row.className = "row " + type;
 
   row.innerHTML = `
     <div class="row-left">
-      <img class="head" src="${getHead(player)}">
+      <img class="head" src="https://mc-heads.net/avatar/${player}">
       ${player}
     </div>
-    <div class="arrow">⇅</div>
+    <div>⇅</div>
   `;
 
   return row;
 }
 
+// 🔥 SWITCH TAB
 function switchMode(mode, el) {
+  currentMode = mode;
+
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   el.classList.add("active");
+
   render(mode);
 }
 
-// default load
-render("Overall");
+// 🔥 INIT
+loadData();
+
 </script>
 
 </body>
