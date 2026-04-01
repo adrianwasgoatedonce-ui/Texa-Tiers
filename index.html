@@ -5,263 +5,276 @@
 
   <style>
     body {
-      font-family: Arial;
-      background: #0f172a;
+      background: #020617;
       color: white;
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    .header {
       text-align: center;
+      margin-bottom: 20px;
     }
 
     .tabs {
       display: flex;
+      gap: 6px;
       justify-content: center;
-      gap: 10px;
-      margin: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
     }
 
-    .tab {
-      padding: 10px 15px;
+    .tabs button {
       background: #1f2937;
-      border-radius: 8px;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      color: white;
       cursor: pointer;
     }
 
-    .tab.active {
-      background: #2563eb;
+    .tabs button.active {
+      background: #3b82f6;
     }
 
-    #list {
-      max-width: 500px;
-      margin: auto;
+    #search {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      background: #111827;
+      color: white;
+      margin-bottom: 10px;
     }
 
     .row {
       display: flex;
       justify-content: space-between;
       padding: 10px;
-      margin: 5px 0;
       border-radius: 8px;
+      margin-bottom: 5px;
+      transition: 0.2s;
       cursor: pointer;
     }
 
-    .ht {
-      background: #1d4ed8;
-    }
-
-    .lt {
-      background: #374151;
+    .row:hover {
+      transform: scale(1.02);
+      background: #1f2937;
     }
 
     .row-left {
       display: flex;
-      align-items: center;
       gap: 10px;
+      align-items: center;
     }
 
     .head {
-      width: 30px;
+      width: 25px;
       border-radius: 5px;
     }
 
-    .admin {
-      background: #111827;
-      padding: 15px;
-      border-radius: 10px;
-      margin: 20px;
+    .ht { background: rgba(34,197,94,0.15); }
+    .lt { background: rgba(239,68,68,0.15); }
+
+    .top1 { box-shadow: 0 0 15px gold; }
+    .top2 { box-shadow: 0 0 12px silver; }
+    .top3 { box-shadow: 0 0 12px #cd7f32; }
+
+    /* popup */
+    .popup {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
     }
 
-    input, select, button {
-      padding: 8px;
-      margin: 5px;
+    .popup-card {
+      background: #0f172a;
+      padding: 20px;
+      border-radius: 12px;
+      width: 300px;
+    }
+
+    .tier-box {
+      background: #1f2937;
+      padding: 5px;
+      margin: 3px;
       border-radius: 6px;
-      border: none;
+      font-size: 12px;
     }
 
-    button {
-      background: #2563eb;
-      color: white;
-      cursor: pointer;
-    }
   </style>
 </head>
 
 <body>
 
-<h1>⚔️ Texa Tier List</h1>
-
-<!-- ADMIN PANEL -->
-<div class="admin">
-  <h3>Admin Panel</h3>
-
-  <input id="nameInput" placeholder="Player Name">
-
-  <select id="modeInput">
-    <option>Overall</option>
-    <option>Vanilla</option>
-    <option>UHC</option>
-    <option>Sword</option>
-    <option>Axe</option>
-  </select>
-
-  <select id="tierInput">
-    <option>HT1</option><option>LT1</option>
-    <option>HT2</option><option>LT2</option>
-    <option>HT3</option><option>LT3</option>
-    <option>HT4</option><option>LT4</option>
-  </select>
-
-  <button onclick="addPlayer()">Add Player</button>
+<div class="header">
+  <h1>Texa Tier List</h1>
 </div>
 
-<!-- TABS -->
+<input id="search" placeholder="Search player..." oninput="render(currentMode)">
+
 <div class="tabs">
-  <div class="tab active" onclick="switchMode('Overall', this)">Overall</div>
-  <div class="tab" onclick="switchMode('Vanilla', this)">Vanilla</div>
-  <div class="tab" onclick="switchMode('UHC', this)">UHC</div>
-  <div class="tab" onclick="switchMode('Sword', this)">Sword</div>
-  <div class="tab" onclick="switchMode('Axe', this)">Axe</div>
+  <button onclick="switchMode('Overall', this)" class="active">Overall</button>
+  <button onclick="switchMode('Vanilla', this)">Vanilla</button>
+  <button onclick="switchMode('Sword', this)">Sword</button>
+  <button onclick="switchMode('UHC', this)">UHC</button>
+  <button onclick="switchMode('Axe', this)">Axe</button>
+  <button onclick="switchMode('Nethop', this)">Nethop</button>
+  <button onclick="switchMode('Pot', this)">Pot</button>
+  <button onclick="switchMode('SMP', this)">SMP</button>
+  <button onclick="switchMode('Mace', this)">Mace</button>
 </div>
 
 <div id="list"></div>
 
+<!-- popup -->
+<div id="popup" class="popup" onclick="closePopup()">
+  <div class="popup-card" onclick="event.stopPropagation()">
+    <h2 id="pname"></h2>
+    <img id="phead">
+    <div id="ppoints"></div>
+    <div id="prank"></div>
+    <div id="ptiers"></div>
+  </div>
+</div>
+
 <script type="module">
 
-// 🔥 FIREBASE IMPORTS
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// 🔥 YOUR CONFIG (PASTE YOURS HERE)
 const firebaseConfig = {
-  apiKey: "PASTE",
-  authDomain: "PASTE",
-  projectId: "PASTE",
-  storageBucket: "PASTE",
-  messagingSenderId: "PASTE",
-  appId: "PASTE"
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_ID",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 DATABASE
-let database = {
-  Overall: {},
-  Vanilla: {},
-  UHC: {},
-  Sword: {},
-  Axe: {}
+let players = [];
+let currentMode = "Overall";
+
+const tierPoints = {
+  HT1: 100, LT1: 90,
+  HT2: 80, LT2: 70,
+  HT3: 60, LT3: 50,
+  HT4: 40, LT4: 30
 };
 
-// 🔥 TIER ORDER
-const tierOrder = [
-  "HT1","LT1",
-  "HT2","LT2",
-  "HT3","LT3",
-  "HT4","LT4"
-];
-
-// 🔥 ADD PLAYER
-async function addPlayer() {
-  const name = document.getElementById("nameInput").value.trim();
-  const mode = document.getElementById("modeInput").value;
-  const tier = document.getElementById("tierInput").value;
-
-  if (!name) return;
-
-  await addDoc(collection(db, "tiers"), {
-    name,
-    mode,
-    tier
-  });
-
-  loadData();
+function getRank(points) {
+  if (points >= 300) return { name: "Immortal", color: "red" };
+  if (points >= 250) return { name: "Elite Champion", color: "purple" };
+  if (points >= 200) return { name: "Master", color: "blue" };
+  if (points >= 150) return { name: "Advanced", color: "green" };
+  if (points >= 100) return { name: "Skilled", color: "gold" };
+  return { name: "Beginner", color: "gray" };
 }
 
-// 🔥 LOAD DATA
 async function loadData() {
-  database = {
-    Overall: {},
-    Vanilla: {},
-    UHC: {},
-    Sword: {},
-    Axe: {}
-  };
+  players = [];
 
-  const snapshot = await getDocs(collection(db, "tiers"));
+  const snapshot = await getDocs(collection(db, "players"));
 
   snapshot.forEach(doc => {
-    const data = doc.data();
+    let p = doc.data();
+    let points = 0;
 
-    if (!database[data.mode][data.tier]) {
-      database[data.mode][data.tier] = [];
+    for (let m in p.tiers) {
+      points += tierPoints[p.tiers[m]] || 0;
     }
 
-    database[data.mode][data.tier].push(data.name);
+    players.push({
+      name: p.name,
+      tiers: p.tiers,
+      points
+    });
   });
 
   render(currentMode);
 }
 
-// 🔥 RENDER
-let currentMode = "Overall";
+function switchMode(mode, el) {
+  currentMode = mode;
+
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+  if (el) el.classList.add("active");
+
+  render(mode);
+}
 
 function render(mode) {
   const container = document.getElementById("list");
   container.innerHTML = "";
 
-  const tiers = database[mode] || {};
+  const search = document.getElementById("search").value.toLowerCase();
 
-  const sorted = Object.keys(tiers).sort(
-    (a, b) => tierOrder.indexOf(a) - tierOrder.indexOf(b)
-  );
+  if (mode === "Overall") {
+    players.sort((a,b)=>b.points-a.points);
 
-  sorted.forEach(tier => {
-    const isHT = tier.startsWith("HT");
+    players.forEach((p,i)=>{
+      if (!p.name.toLowerCase().includes(search)) return;
 
-    let title = document.createElement("div");
-    title.innerText = tier;
-    title.style.marginTop = "10px";
-    title.style.fontWeight = "bold";
+      let crown = i===0?"👑":i===1?"🥈":i===2?"🥉":"";
+      let extra = i===0?"top1":i===1?"top2":i===2?"top3":"";
 
-    container.appendChild(title);
+      const rank = getRank(p.points);
 
-    tiers[tier].sort().forEach(player => {
-      container.appendChild(makeRow(player, isHT ? "ht" : "lt"));
+      let row = document.createElement("div");
+      row.className = "row ht " + extra;
+
+      row.onclick = ()=>openPopup(p.name);
+
+      row.innerHTML = `
+        <div class="row-left">
+          <b>${crown} #${i+1}</b>
+          <img class="head" src="https://mc-heads.net/avatar/${p.name}">
+          ${p.name}
+        </div>
+        <div>
+          <span style="background:${rank.color};padding:3px 6px;border-radius:5px;font-size:11px;">
+            ${rank.name}
+          </span><br>
+          ${p.points} pts
+        </div>
+      `;
+
+      container.appendChild(row);
     });
-  });
+
+    return;
+  }
 }
 
-// 🔥 PLAYER ROW
-function makeRow(player, type) {
-  let row = document.createElement("div");
-  row.className = "row " + type;
+function openPopup(name){
+  const p = players.find(x=>x.name===name);
 
-  row.innerHTML = `
-    <div class="row-left">
-      <img class="head" src="https://mc-heads.net/avatar/${player}">
-      ${player}
-    </div>
-    <div>⇅</div>
-  `;
+  document.getElementById("popup").style.display="flex";
+  document.getElementById("pname").innerText=p.name;
+  document.getElementById("phead").src=`https://mc-heads.net/avatar/${p.name}`;
+  document.getElementById("ppoints").innerText=p.points+" pts";
 
-  return row;
+  const sorted=[...players].sort((a,b)=>b.points-a.points);
+  const pos=sorted.findIndex(x=>x.name===name)+1;
+
+  document.getElementById("prank").innerText="#"+pos;
+
+  const box=document.getElementById("ptiers");
+  box.innerHTML="";
+
+  for(let m in p.tiers){
+    let d=document.createElement("div");
+    d.className="tier-box";
+    d.innerText=m+": "+p.tiers[m];
+    box.appendChild(d);
+  }
 }
 
-// 🔥 SWITCH TAB
-function switchMode(mode, el) {
-  currentMode = mode;
+window.closePopup=()=>document.getElementById("popup").style.display="none";
 
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  el.classList.add("active");
-
-  render(mode);
-}
-
-// 🔥 INIT
 loadData();
 
 </script>
