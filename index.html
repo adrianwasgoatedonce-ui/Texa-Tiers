@@ -11,7 +11,6 @@
       margin: 0;
     }
 
-    /* TITLE */
     .title {
       text-align: center;
       font-size: 42px;
@@ -19,7 +18,6 @@
       margin-top: 25px;
     }
 
-    /* GAMEMODES */
     .tabs {
       display: flex;
       justify-content: center;
@@ -54,7 +52,64 @@
       transition: 0.3s;
     }
 
-    /* RIGHT SIDE REGIONS */
+    /* SEARCH BAR */
+    .search-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .search-container input {
+      background: #1f2937;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: white;
+      outline: none;
+    }
+
+    .search-container button {
+      background: #2563eb;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .search-container button:hover {
+      background: #1d4ed8;
+    }
+
+    /* POPUPS */
+    .popup {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: #1f2937;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      animation: fadeIn 0.2s ease;
+    }
+
+    .popup.error {
+      background: #7f1d1d;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* REGIONS */
     .regions-container {
       position: fixed;
       right: 20px;
@@ -95,20 +150,34 @@
       transition: 0.3s;
     }
 
-    /* CONTENT PLACEHOLDER */
     .content {
       margin-top: 60px;
       text-align: center;
       opacity: 0.5;
     }
-
   </style>
 </head>
 
 <body>
 
-  <!-- TITLE -->
   <div class="title">Texa Teirs</div>
+
+  <!-- SEARCH -->
+  <div class="search-container">
+    <input type="text" id="playerInput" placeholder="Search player..." />
+    <button onclick="searchPlayer()">Go</button>
+  </div>
+
+  <!-- POPUPS -->
+  <div id="searchingPopup" class="popup hidden">
+    Searching Player...<br>
+    <span id="searchingName"></span>
+  </div>
+
+  <div id="errorPopup" class="popup error hidden">
+    <strong>Player Not Found</strong><br>
+    Unable to find player by the name of <span id="errorName"></span>
+  </div>
 
   <!-- GAMEMODES -->
   <div class="tabs" id="tabs">
@@ -123,7 +192,7 @@
     <div class="tab" onclick="switchMode('nethpot')">NethOP</div>
   </div>
 
-  <!-- REGIONS RIGHT -->
+  <!-- REGIONS -->
   <div class="regions-container">
     <div class="regions" id="regions">
       <div class="region" onclick="setRegion('ALL')">ALL</div>
@@ -142,7 +211,6 @@
   let currentMode = "overall";
   let currentRegion = "ALL";
 
-  // MODE SWITCH
   function switchMode(mode){
     currentMode = mode;
 
@@ -167,7 +235,6 @@
     }
   }
 
-  // REGION SWITCH
   function setRegion(region){
     currentRegion = region;
 
@@ -192,11 +259,60 @@
     }
   }
 
-  // INIT
-  window.onload = () => {
+  // SEARCH (Mojang check → open NameMC)
+  async function searchPlayer() {
+    const username = document.getElementById("playerInput").value;
+    if (!username) return;
+
+    showSearching(username);
+
+    try {
+      const res = await fetch(`https://api.mojang.com/users/profiles/minecraft/${username}`);
+
+      if (!res.ok) throw new Error();
+
+      hideSearching();
+
+      // Open NameMC profile
+      window.open(`https://namemc.com/profile/${username}`, "_blank");
+
+    } catch {
+      hideSearching();
+      showError(username);
+    }
+  }
+
+  function showSearching(name){
+    document.getElementById("searchingPopup").classList.remove("hidden");
+    document.getElementById("searchingName").innerText = "Searching for " + name;
+  }
+
+  function hideSearching(){
+    document.getElementById("searchingPopup").classList.add("hidden");
+  }
+
+  function showError(name){
+    const popup = document.getElementById("errorPopup");
+    document.getElementById("errorName").innerText = name;
+    popup.classList.remove("hidden");
+
+    setTimeout(() => {
+      popup.classList.add("hidden");
+    }, 3000);
+  }
+
+  // ENTER KEY SUPPORT
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("playerInput")
+      .addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+          searchPlayer();
+        }
+      });
+
     switchMode('overall');
     setRegion('ALL');
-  }
+  });
 </script>
 
 </body>
