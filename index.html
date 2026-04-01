@@ -18,36 +18,47 @@
       margin-top: 25px;
     }
 
+    /* ===== TABS (ICON STYLE) ===== */
     .tabs {
       display: flex;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       margin-top: 15px;
-      position: relative;
       flex-wrap: wrap;
     }
 
     .tab {
       background: #1f2937;
-      padding: 8px 16px;
-      border-radius: 8px;
+      padding: 10px;
+      border-radius: 10px;
       cursor: pointer;
-      user-select: none;
+      text-align: center;
+      width: 60px;
+      transition: 0.2s;
+    }
+
+    .tab:hover {
+      background: #374151;
     }
 
     .tab.active {
-      font-weight: bold;
+      outline: 2px solid #2563eb;
     }
 
-    .tabs .underline {
-      position: absolute;
-      bottom: -6px;
-      height: 3px;
-      background: #2563eb;
-      border-radius: 2px;
-      transition: 0.3s;
+    .tab img {
+      width: 26px;
+      height: 26px;
+      display: block;
+      margin: auto;
     }
 
+    .tab span {
+      font-size: 11px;
+      display: block;
+      margin-top: 4px;
+    }
+
+    /* ===== REGIONS ===== */
     .regions-container {
       position: fixed;
       left: 20px;
@@ -59,56 +70,18 @@
 
     .region {
       background: #1f2937;
-      padding: 8px 14px;
+      padding: 8px;
       border-radius: 6px;
       cursor: pointer;
-      user-select: none;
       text-align: center;
       width: 60px;
     }
 
     .region.active {
-      font-weight: bold;
+      outline: 2px solid #2563eb;
     }
 
-    .regions .underline {
-      position: absolute;
-      left: 0;
-      width: 3px;
-      background: #2563eb;
-      border-radius: 2px;
-      transition: 0.3s;
-    }
-
-    .search-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      gap: 6px;
-      z-index: 1000;
-    }
-
-    .search-container input {
-      background: #1f2937;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      color: white;
-      outline: none;
-      width: 180px;
-    }
-
-    .search-container button {
-      background: #2563eb;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
+    /* ===== CONTENT ===== */
     .content {
       margin-top: 60px;
       margin-left: 100px;
@@ -118,6 +91,44 @@
       flex-wrap: wrap;
     }
 
+    /* ===== LEADERBOARD ===== */
+    .leaderboard-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #111827;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .leaderboard-row:hover {
+      background: #1f2937;
+    }
+
+    .lb-rank {
+      font-weight: bold;
+      color: gold;
+      width: 40px;
+    }
+
+    .lb-head {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+    }
+
+    .lb-name {
+      font-weight: bold;
+    }
+
+    .lb-tier {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    /* ===== TIERS ===== */
     .tier {
       background: #1f2937;
       padding: 12px;
@@ -126,311 +137,211 @@
     }
 
     .tier strong {
-      font-size: 18px;
       display: block;
       margin-bottom: 8px;
       border-bottom: 1px solid #2563eb;
-      padding-bottom: 4px;
     }
 
-    .player {
+    .player.compact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       padding: 6px;
       cursor: pointer;
-      border-radius: 4px;
-      transition: background 0.15s;
-      user-select: none;
     }
 
-    .player:hover {
-      background: #374151;
+    .mini-head {
+      width: 20px;
+      height: 20px;
     }
 
+    /* ===== MODAL ===== */
     .modal-bg {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 2000;
     }
 
     .modal {
       background: #111827;
-      padding: 20px 30px;
+      padding: 20px;
       border-radius: 10px;
-      width: 280px;
-      max-width: 90vw;
-      text-align: center;
-      box-shadow: 0 0 20px #2563ebaa;
-      position: relative;
+      width: 320px;
     }
 
     .hidden { display: none; }
 
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #333;
-      border-top: 4px solid #60a5fa;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
+    /* ===== SLOT SYSTEM ===== */
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 15px;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .slot {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .slot img {
+      width: 28px;
+      height: 28px;
+    }
+
+    .slot span {
+      display: block;
+      font-size: 11px;
+      margin-top: 4px;
+      color: #fbbf24;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="title">Texa Teirs</div>
+<div class="title">Texa Teirs</div>
 
-  <!-- SEARCH -->
-  <div class="search-container">
-    <input id="playerInput" placeholder="Search player...">
-    <button onclick="searchPlayer()">Search</button>
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchMode('overall')"><img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png"><span>All</span></div>
+  <div class="tab" onclick="switchMode('vanilla')"><img src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png"><span>Vanilla</span></div>
+  <div class="tab" onclick="switchMode('sword')"><img src="https://cdn-icons-png.flaticon.com/512/833/833472.png"><span>Sword</span></div>
+  <div class="tab" onclick="switchMode('uhc')"><img src="https://cdn-icons-png.flaticon.com/512/3176/3176290.png"><span>UHC</span></div>
+</div>
+
+<!-- REGIONS -->
+<div class="regions-container">
+  <div class="region active" onclick="setRegion('ALL')">ALL</div>
+  <div class="region" onclick="setRegion('NA')">NA</div>
+  <div class="region" onclick="setRegion('EU')">EU</div>
+</div>
+
+<!-- CONTENT -->
+<div class="content" id="content"></div>
+
+<!-- MODAL -->
+<div id="modal" class="modal-bg hidden" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div id="modalContent"></div>
   </div>
-
-  <!-- TABS -->
-  <div class="tabs" id="tabs">
-    <div class="tab" onclick="switchMode('overall')">Overall</div>
-    <div class="tab" onclick="switchMode('vanilla')">Vanilla</div>
-    <div class="tab" onclick="switchMode('sword')">Sword</div>
-    <div class="tab" onclick="switchMode('uhc')">UHC</div>
-    <div class="tab" onclick="switchMode('pot')">Pot</div>
-    <div class="tab" onclick="switchMode('nethpot')">NethOP</div>
-    <div class="tab" onclick="switchMode('mace')">Mace</div>
-    <div class="tab" onclick="switchMode('smp')">SMP</div>
-    <div class="tab" onclick="switchMode('axe')">Axe</div>
-  </div>
-
-  <!-- REGIONS -->
-  <div class="regions-container" id="regions">
-    <div class="region" onclick="setRegion('ALL')">ALL</div>
-    <div class="region" onclick="setRegion('NA')">NA</div>
-    <div class="region" onclick="setRegion('EU')">EU</div>
-    <div class="region" onclick="setRegion('AS')">AS</div>
-    <div class="region" onclick="setRegion('OCE')">OCE</div>
-  </div>
-
-  <!-- CONTENT -->
-  <div class="content" id="content"></div>
-
-  <!-- MODAL -->
-  <div id="modal" class="modal-bg hidden" onclick="closeModal()">
-    <div class="modal" onclick="event.stopPropagation()">
-      <div id="modalContent"></div>
-    </div>
-  </div>
+</div>
 
 <script>
-  // Current mode and region
-  let currentMode = "overall";
-  let currentRegion = "ALL";
+let currentMode = "overall";
 
-  // Sample player data with actual tiers and players, including nottexa where specified
-  // Note: Player region data is not filtering for simplicity.
-  const playerData = {
-    overall: {
-      "Immortal Demon": ["nottexa"],
-      "Mid": ["Demonmcc", "KingD3fault", "qPower"],
-      "Rookie": ["rookieplayer"]
-    },
-    vanilla: {
-      "Tier 1": ["K1RBE"],
-      "Tier 2": ["Camcal", "Demonmcc", "KingD3fault", "qPower", "Tokenu", "cloudmlol", "Cowarted", "Dwaggo", "SuperBowserSpike", "C1utch", "MoezXF", "IRONSKKEGOXX7153", "ItzEggman", "GalleryWalk", "OODarkmoon", "Salty__Bear"],
-      "Tier 3": ["jayckuuub", "ItzTerrel", "thelastw1nter", "isolatiion", "NoLimitDash", "otbkibble", "cizell", "Xeirlo", "iLurkin", "N9vara", "ASVxGOD_", "Fluffychris5499", "ImHT3", "BuffRobloxNoob", "Epsteinnnnnnn", "A__6", "nottexa"],
-      "Tier 4": ["MPI_YT", "chuypopis", "trayde_", "8ammNoticeMe", "Sasukex7z", "TheSwe4ter", "CXPYR1GHT", "K1RBEOFASIA", "1xsv", "Cqsualty", "7daysqlow", "WorstInArizona", "PijasLover", "sleepx", "Nadon0202", "gabriel2_"],
-      "Tier 5": ["ALIPROYT1", "hiadyman", "barbarthecrafter", "Certified7399", "FIERROSO1", "Khromer", "SorryForSnow", "Ted_TNT", "SpeedszYT", "Mrlqkii", "BobGuyMC", "b3bu7", "Nytrrixx", "__Tomson___", "Louis4697", "Llyfter_"]
-    },
-    sword: {
-      "Tier 1": ["swordMaster"],
-      "Tier 2": ["SwordKing"],
-      "Tier 3": ["BladeRunner"],
-      "Tier 4": ["nottexa"],
-      "Tier 5": ["SwordNoob"]
-    },
-    uhc: {
-      "Tier 1": ["uhcPro"],
-      "Tier 2": ["uhcVeteran"],
-      "Tier 3": ["uhcChampion"],
-      "Tier 4": ["nottexa"],
-      "Tier 5": ["uhcNoob"]
-    },
-    pot: {
-      "Tier 1": ["potMaster"],
-      "Tier 2": ["potKing"],
-      "Tier 3": ["potRunner"],
-      "Tier 4": ["nottexa"],
-      "Tier 5": ["potNoob"]
-    },
-    nethpot: {
-      "Tier 1": ["nethPro"],
-      "Tier 2": ["nethVeteran"],
-      "Tier 3": ["nethChampion"],
-      "Tier 4": ["nottexa"],
-      "Tier 5": ["nethNoob"]
-    },
-    mace: {
-      "Tier 1": ["maceMaster"],
-      "Tier 2": ["maceKing"],
-      "Tier 3": ["maceRunner"],
-      "Tier 4": ["nottexa"],
-      "Tier 5": ["maceNoob"]
-    },
-    smp: {
-      "Tier 1": ["smpMaster"],
-      "Tier 2": ["smpKing"],
-      "Tier 3": ["smpRunner"],
-      "Tier 4": ["nottexa"],
-      "Tier 5": ["smpNoob"]
-    },
-    axe: {
-      "Tier 1": ["axeMaster"],
-      "Tier 2": ["axeKing"],
-      "Tier 3": ["axeRunner"],
-      "Tier 4": ["nottexa"],
-      "Tier 5": ["axeNoob"]
-    }
-  };
-
-  // Helper for ranks by player name (simple)
-  function getRank(name) {
-    if (name.toLowerCase() === "nottexa") return "Immortal Demon";
-    return "Rookie";
+const playerData = {
+  overall: {
+    "Immortal Demon": ["nottexa"],
+    "Mid": ["Demonmcc"]
+  },
+  vanilla: {
+    "Tier 1": ["K1RBE"],
+    "Tier 2": ["Camcal", "Demonmcc"]
   }
+};
 
-  // Update tabs underline position and width
-  function updateTabsUnderline() {
-    const tabs = document.getElementById("tabs");
-    let underline = tabs.querySelector(".underline");
-    if (!underline) {
-      underline = document.createElement("div");
-      underline.className = "underline";
-      tabs.appendChild(underline);
-    }
-    const activeTab = [...tabs.children].find(t => t.classList.contains("active"));
-    if (activeTab) {
-      underline.style.width = activeTab.offsetWidth + "px";
-      underline.style.left = activeTab.offsetLeft + "px";
-    }
-  }
+/* SLOT DATA (example like HT2 LT3 etc) */
+const slotData = {
+  "nottexa": [
+    {icon:"❤️", tier:"HT2"},
+    {icon:"⚔️", tier:"HT1"},
+    {icon:"🧪", tier:"LT3"}
+  ]
+};
 
-  // Update regions underline position and height
-  function updateRegionsUnderline() {
-    const regions = document.getElementById("regions");
-    let underline = regions.querySelector(".underline");
-    if (!underline) {
-      underline = document.createElement("div");
-      underline.className = "underline";
-      regions.appendChild(underline);
-    }
-    const activeRegion = [...regions.children].find(r => r.classList.contains("active"));
-    if (activeRegion) {
-      underline.style.height = activeRegion.offsetHeight + "px";
-      underline.style.top = activeRegion.offsetTop + "px";
-      underline.style.left = "0px";
-    }
-  }
+function renderContent() {
+  const container = document.getElementById("content");
+  container.innerHTML = "";
 
-  // Switch tab/mode
-  function switchMode(mode) {
-    currentMode = mode;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    const tab = [...document.querySelectorAll('.tab')].find(t => t.innerText.toLowerCase() === mode.toLowerCase());
-    if (tab) tab.classList.add('active');
-    updateTabsUnderline();
-    renderContent();
-  }
+  const data = playerData[currentMode];
 
-  // Switch region
-  function setRegion(region) {
-    currentRegion = region;
-    document.querySelectorAll('.region').forEach(r => r.classList.remove('active'));
-    const reg = [...document.querySelectorAll('.region')].find(r => r.innerText === region);
-    if (reg) reg.classList.add('active');
-    updateRegionsUnderline();
-    renderContent();
-  }
-
-  // Render content for current mode and region (region filtering NOT implemented here)
-  function renderContent() {
-    const container = document.getElementById("content");
-    container.innerHTML = "";
-
-    const modeData = playerData[currentMode];
-    if (!modeData) {
-      container.innerText = "No data for this mode.";
-      return;
-    }
-
-    for (const tierName in modeData) {
-      const tierDiv = document.createElement("div");
-      tierDiv.className = "tier";
-      tierDiv.innerHTML = `<strong>${tierName}</strong>`;
-
-      modeData[tierName].forEach(player => {
-        const playerDiv = document.createElement("div");
-        playerDiv.className = "player";
-        playerDiv.innerText = player;
-        playerDiv.onclick = () => openModal(player);
-        tierDiv.appendChild(playerDiv);
+  if (currentMode === "overall") {
+    let rank = 1;
+    for (const tier in data) {
+      data[tier].forEach(player => {
+        const row = document.createElement("div");
+        row.className = "leaderboard-row";
+        row.innerHTML = `
+          <div class="lb-rank">#${rank}</div>
+          <img class="lb-head" src="https://mc-heads.net/avatar/${player}">
+          <div>
+            <div class="lb-name">${player}</div>
+            <div class="lb-tier">${tier}</div>
+          </div>
+        `;
+        row.onclick = () => openModal(player);
+        container.appendChild(row);
+        rank++;
       });
+    }
+    return;
+  }
 
-      container.appendChild(tierDiv);
+  for (const tier in data) {
+    const div = document.createElement("div");
+    div.className = "tier";
+    div.innerHTML = `<strong>${tier}</strong>`;
+
+    data[tier].forEach(player => {
+      const p = document.createElement("div");
+      p.className = "player compact";
+      p.innerHTML = `
+        <img class="mini-head" src="https://mc-heads.net/avatar/${player}">
+        ${player}
+      `;
+      p.onclick = () => openModal(player);
+      div.appendChild(p);
+    });
+
+    container.appendChild(div);
+  }
+}
+
+function openModal(player) {
+  const modal = document.getElementById("modal");
+  modal.classList.remove("hidden");
+
+  const slots = slotData[player] || [];
+
+  let slotsHTML = "";
+
+  for (let i = 0; i < 8; i++) {
+    if (slots[i]) {
+      slotsHTML += `
+        <div class="slot">
+          <div>${slots[i].icon}</div>
+          <span>${slots[i].tier}</span>
+        </div>
+      `;
+    } else {
+      slotsHTML += `<div class="slot"></div>`;
     }
   }
 
-  // Open modal for player details
-  function openModal(playerName) {
-    const modal = document.getElementById("modal");
-    modal.classList.remove("hidden");
+  document.getElementById("modalContent").innerHTML = `
+    <h2>${player}</h2>
+    <div class="slots">${slotsHTML}</div>
+  `;
+}
 
-    const content = document.getElementById("modalContent");
-    content.innerHTML = `<div class="spinner"></div>`;
+function closeModal() {
+  document.getElementById("modal").classList.add("hidden");
+}
 
-    setTimeout(() => {
-      const rank = getRank(playerName);
-      content.innerHTML = `
-        <h2>${playerName}</h2>
-        <p>Rank: <strong>${rank}</strong></p>
-        <p>Category: <strong>${capitalize(currentMode)}</strong></p>
-        <p>Region: <strong>${currentRegion}</strong></p>
-      `;
-    }, 500);
-  }
+function switchMode(mode) {
+  currentMode = mode;
+  renderContent();
+}
 
-  function closeModal() {
-    document.getElementById("modal").classList.add("hidden");
-  }
+function setRegion() {}
 
-  // Search player by name and open modal
-  function searchPlayer() {
-    const name = document.getElementById("playerInput").value.trim();
-    if (!name) return;
-    openModal(name);
-  }
-
-  // Capitalize helper
-  function capitalize(str) {
-    if (!str) return "";
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  // Initialize
-  document.addEventListener("DOMContentLoaded", () => {
-    switchMode("overall");
-    setRegion("ALL");
-
-    document.getElementById("playerInput").addEventListener("keypress", e => {
-      if (e.key === "Enter") searchPlayer();
-    });
-  });
-
+renderContent();
 </script>
 
 </body>
