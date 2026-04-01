@@ -27,7 +27,7 @@
       color: #facc15;
     }
 
-    /* GAMEMODE TABS */
+    /* TABS */
     .tabs {
       display: flex;
       justify-content: center;
@@ -41,7 +41,6 @@
       background: #111827;
       border-radius: 10px;
       cursor: pointer;
-      transition: 0.2s;
     }
 
     .tab:hover {
@@ -83,8 +82,8 @@
     /* PLAYER ROW */
     .row {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       padding: 8px;
       border-bottom: 1px solid #0b1220;
     }
@@ -107,6 +106,18 @@
     .arrow {
       opacity: 0.5;
     }
+
+    /* OVERALL LIST */
+    .overall-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1f2937;
+      margin: 8px auto;
+      padding: 10px;
+      width: 320px;
+      border-radius: 10px;
+    }
   </style>
 </head>
 
@@ -119,17 +130,25 @@
 
 <!-- TABS -->
 <div class="tabs">
-  <div class="tab active" onclick="switchMode('Vanilla', this)">Vanilla</div>
+  <div class="tab active" onclick="switchMode('Overall', this)">🏆 Overall</div>
+  <div class="tab" onclick="switchMode('Vanilla', this)">Vanilla</div>
   <div class="tab" onclick="switchMode('UHC', this)">UHC</div>
   <div class="tab" onclick="switchMode('Sword', this)">Sword</div>
   <div class="tab" onclick="switchMode('Axe', this)">Axe</div>
 </div>
 
-<!-- TIERS -->
+<!-- CONTENT -->
 <div id="tiers"></div>
 
 <script>
 const data = {
+  Overall: {
+    "Top Players": {
+      HT: ["K1RBE", "Camcal", "Demonmcc", "KingD3fault"],
+      LT: ["qPower", "Tokenu", "cloudmlol"]
+    }
+  },
+
   Vanilla: {
     "Tier 1": { HT: ["K1RBE"], LT: [] },
     "Tier 2": {
@@ -177,6 +196,30 @@ function render(mode) {
   const container = document.getElementById("tiers");
   container.innerHTML = "";
 
+  // 🏆 OVERALL
+  if (mode === "Overall") {
+    let list = [...data.Overall["Top Players"].HT, ...data.Overall["Top Players"].LT];
+
+    list.forEach((player, index) => {
+      let row = document.createElement("div");
+      row.className = "overall-row";
+
+      row.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;">
+          <b>#${index + 1}</b>
+          <img src="${getHead(player)}" width="30">
+          ${player}
+        </div>
+        <div>⭐</div>
+      `;
+
+      container.appendChild(row);
+    });
+
+    return;
+  }
+
+  // 🔥 TIERS
   let i = 1;
 
   for (let tier in data[mode]) {
@@ -188,12 +231,10 @@ function render(mode) {
     title.innerText = tier;
     box.appendChild(title);
 
-    // HT
     data[mode][tier].HT.forEach(p => {
       box.appendChild(makeRow(p, "ht"));
     });
 
-    // LT
     data[mode][tier].LT.forEach(p => {
       box.appendChild(makeRow(p, "lt"));
     });
@@ -224,8 +265,8 @@ function switchMode(mode, el) {
   render(mode);
 }
 
-// default
-render("Vanilla");
+// default load
+render("Overall");
 </script>
 
 </body>
