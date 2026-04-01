@@ -52,7 +52,7 @@
       transition: 0.3s;
     }
 
-    /* SEARCH BAR */
+    /* SEARCH BAR (TOP RIGHT) */
     .search-container {
       position: fixed;
       top: 20px;
@@ -64,19 +64,21 @@
     .search-container input {
       background: #1f2937;
       border: none;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 8px;
       color: white;
       outline: none;
+      width: 180px;
     }
 
     .search-container button {
       background: #2563eb;
       border: none;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 8px;
       color: white;
       cursor: pointer;
+      font-weight: bold;
     }
 
     .search-container button:hover {
@@ -93,7 +95,6 @@
       border-radius: 8px;
       margin-top: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.4);
-      animation: fadeIn 0.2s ease;
     }
 
     .popup.error {
@@ -104,15 +105,10 @@
       display: none;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* REGIONS */
+    /* REGIONS NOW ON LEFT */
     .regions-container {
       position: fixed;
-      right: 20px;
+      left: 20px;   /* ✅ CHANGED FROM RIGHT TO LEFT */
       top: 120px;
     }
 
@@ -165,7 +161,7 @@
   <!-- SEARCH -->
   <div class="search-container">
     <input type="text" id="playerInput" placeholder="Search player..." />
-    <button onclick="searchPlayer()">Go</button>
+    <button onclick="searchPlayer()">Search</button> <!-- ✅ BUTTON NOW VISIBLE -->
   </div>
 
   <!-- POPUPS -->
@@ -259,7 +255,6 @@
     }
   }
 
-  // SEARCH (Mojang check → open NameMC)
   async function searchPlayer() {
     const username = document.getElementById("playerInput").value;
     if (!username) return;
@@ -268,12 +263,9 @@
 
     try {
       const res = await fetch(`https://api.mojang.com/users/profiles/minecraft/${username}`);
-
       if (!res.ok) throw new Error();
 
       hideSearching();
-
-      // Open NameMC profile
       window.open(`https://namemc.com/profile/${username}`, "_blank");
 
     } catch {
@@ -301,7 +293,6 @@
     }, 3000);
   }
 
-  // ENTER KEY SUPPORT
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("playerInput")
       .addEventListener("keypress", function(e) {
